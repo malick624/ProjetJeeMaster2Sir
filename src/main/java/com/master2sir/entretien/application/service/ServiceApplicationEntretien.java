@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ServiceApplicationEntretien implements PortGestionEntretien, PortGenerationQuestions, PortEvaluationReponse {
 
-    private final EntretienRepository entretienRepository;
+    private final EntretienRepository entretienRepository = null;
     private final ServiceOrchestrateurEntretien serviceOrchestrateurEntretien;
     private final ServiceAnalyseReponses serviceAnalyseReponses;
 
