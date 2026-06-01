@@ -1,0 +1,407 @@
+================================================================================
+DOCUMENTATION DU PROJET ENTRETIEN - SPRING AI INTERVIEW APPLICATION
+================================================================================
+
+NOM DU PROJET: Entretien Application
+VERSION: 0.0.1-SNAPSHOT
+DESCRIPTION: Application Spring Boot pour la simulation d'entretiens avec IA
+AUTEUR: Master 2 SIR
+DATE: 31 Mai 2026
+
+================================================================================
+STRUCTURE DU PROJET
+================================================================================
+
+Le projet suit une architecture hexagonale (DDD) avec les couches suivantes:
+- Domain: Coeur métier, modèles et ports
+- Application: Services applicatifs et cas d'utilisation
+- Infrastructure: Adaptateurs techniques (REST, WebSocket, Base de données)
+
+================================================================================
+CLASSES PAR PACKAGE
+================================================================================
+
+PACKAGE PRINCIPAL: com.master2sir.entretien
+--------------------------------------------
+
+1. EntretienApplication.java
+   - Classe principale Spring Boot
+   - Point d'entrée de l'application
+   - Configuration de l'application
+
+================================================================================
+PACKAGE: com.master2sir.entretien.application.service
+------------------------------------------------------
+
+Services applicatifs qui orchestrent les cas d'utilisation métier.
+
+1. ServiceApplicationEntretien.java
+   - Service principal de gestion des entretiens
+   - Implémente: PortGestionEntretien, PortGenerationQuestions, PortEvaluationReponse
+   - Dépendances: EntretienRepository, ServiceOrchestrateurEntretien, ServiceAnalyseReponses
+   - Responsabilités:
+     * Créer des entretiens
+     * Démarrer/terminer des sessions
+     * Évaluer les réponses
+     * Convertir les modèles en DTOs
+
+2. ServiceApplicationRapport.java
+   - Service de génération de rapports d'entretien
+   - Implémente: PortGenerationRapport
+   - Responsabilités:
+     * Générer des rapports détaillés
+     * Analyser les performances du candidat
+
+3. ServiceModeAvatar.java
+   - Service pour le mode d'interaction par avatar
+   - Gère les interactions avec l'avatar virtuel
+   - Utilise CommandeSoumettreReponse
+
+4. ServiceModeChat.java
+   - Service pour le mode d'interaction par chat
+   - Gère les conversations textuelles
+   - Utilise CommandeSoumettreReponse
+
+5. ServiceModeVoix.java
+   - Service pour le mode d'interaction par voix
+   - Gère les interactions vocales
+   - Utilise CommandeSoumettreReponse
+
+================================================================================
+PACKAGE: com.master2sir.entretien.application.usecase
+------------------------------------------------------
+
+Objets de transfert de données et commandes pour les cas d'utilisation.
+
+1. CommandeCreerEntretien.java
+   - Commande pour créer un nouvel entretien
+   - Champs:
+     * idCandidat: UUID
+     * contenuDescriptionPoste: String
+     * mode: ModeInteraction
+     * nombreQuestions: int
+
+2. CommandeDemarrerEntretien.java
+   - Commande pour démarrer un entretien existant
+   - Champs: idEntretien: UUID
+
+3. CommandeSoumettreReponse.java
+   - Commande pour soumettre une réponse à une question
+   - Champs:
+     * idEntretien: UUID
+     * idQuestion: UUID
+     * contenuReponse: String
+
+4. DTOQuestion.java
+   - DTO pour transférer les données de questions
+   - Champs: id, contenu, categorie, competencesRequises, indexOrdre
+
+5. DTORapport.java
+   - DTO pour transférer les données de rapport
+   - Contient les résultats de l'entretien
+
+6. DTOReponse.java
+   - DTO pour transférer les données de réponses
+   - Contient les réponses du candidat
+
+7. DTOResponseEntretien.java
+   - DTO complet de réponse d'entretien
+   - Champs:
+     * id, idCandidat, titrePoste
+     * mode, etat, questions
+     * dateCreation, dateDebut, dateFin, dureeMinutes
+
+8. RequeteInitialiserEntretien.java
+   - Requête pour initialiser un entretien
+   - Contient les paramètres d'initialisation
+
+================================================================================
+PACKAGE: com.master2sir.entretien.domain.model
+------------------------------------------------
+
+Modèles du domaine métier (entités).
+
+1. DescriptionPoste.java
+   - Modèle représentant la description d'un poste
+   - Champs: titre, description, responsabilites, competences
+
+2. EtatEntretien.java
+   - Enumération des états possibles d'un entretien
+   - Valeurs: CREE, EN_COURS, TERMINE, ANNULE
+
+3. ModeInteraction.java
+   - Enumération des modes d'interaction disponibles
+   - Valeurs: CHAT, VOIX, AVATAR
+
+4. ProfilCandidat.java
+   - Modèle représentant le profil d'un candidat
+   - Champs: informations personnelles, compétences, expérience
+
+5. Question.java
+   - Modèle représentant une question d'entretien
+   - Champs: id, content, category, requiredSkills, orderIndex
+
+6. RapportEntretien.java
+   - Modèle représentant le rapport d'entretien
+   - Champs: résultats, analyse, recommandations
+
+7. Reponse.java
+   - Modèle représentant une réponse du candidat
+   - Champs: id, idQuestion, contenu, evaluation
+
+8. SessionEntretien.java
+   - Modèle principal représentant une session d'entretien
+   - Champs:
+     * id, idCandidat, descriptionPoste
+     * questions, reponses
+     * modeInteraction, etat
+     * dates (creation, debut, fin)
+     * dureeMinutes
+
+================================================================================
+PACKAGE: com.master2sir.entretien.domain.port.in
+--------------------------------------------------
+
+Ports d'entrée (interfaces) définissant les contrats du domaine.
+
+1. PortEvaluationReponse.java
+   - Interface pour l'évaluation des réponses
+   - Méthode: evaluerReponse(idEntretien, idQuestion, contenuReponse)
+
+2. PortGenerationQuestions.java
+   - Interface pour la génération de questions
+   - Méthodes: genererQuestions(), obtenirQuestionSuivante()
+
+3. PortGenerationRapport.java
+   - Interface pour la génération de rapports
+   - Méthode: genererRapport(idEntretien)
+
+4. PortGestionEntretien.java
+   - Interface pour la gestion des entretiens
+   - Méthodes:
+     * creerEntretien(idCandidat, contenuDescriptionPoste, mode)
+     * demarrerEntretien(idEntretien)
+     * obtenirEntretien(idEntretien)
+     * terminerEntretien(idEntretien)
+
+5. PortInteractionAvatar.java
+   - Interface pour les interactions avatar
+   - Méthodes spécifiques au mode avatar
+
+6. PortInteractionVoix.java
+   - Interface pour les interactions vocales
+   - Méthodes spécifiques au mode voix
+
+================================================================================
+PACKAGE: com.master2sir.entretien.domain.port.out
+---------------------------------------------------
+
+Ports de sortie (interfaces) pour les adaptateurs externes.
+
+1. EntretienRepository.java
+   - Interface de repository pour les entretiens
+   - Méthodes:
+     * sauvegarder(SessionEntretien)
+     * findById(UUID)
+     * findAll()
+     * delete(UUID)
+
+2. PortServiceChatIA.java
+   - Interface pour le service de chat IA
+   - Méthodes pour communiquer avec l'IA
+
+================================================================================
+PACKAGE: com.master2sir.entretien.domain.service
+--------------------------------------------------
+
+Services du domaine (logique métier pure).
+
+1. ServiceAnalyseReponses.java
+   - Service d'analyse des réponses du candidat
+   - Utilise l'IA pour évaluer les réponses
+   - Méthode: analyserReponse(question, contenuReponse)
+
+2. ServiceOrchestrateurEntretien.java
+   - Service d'orchestration des entretiens
+   - Coordonne le déroulement d'un entretien
+   - Dépendances: PortServiceChatIA, EntretienRepository
+   - Méthodes:
+     * initialiserEntretien(contenuDescriptionPoste, nombreQuestions)
+     * demarrerSession(idEntretien)
+     * terminerSession(idEntretien)
+
+================================================================================
+PACKAGE: com.master2sir.entretien.infrastructure.adapter.input.rest
+---------------------------------------------------------------------
+
+Adaptateurs REST pour les API HTTP.
+
+1. ControleurEntretien.java
+   - Contrôleur REST principal pour les entretiens
+   - Endpoints:
+     * POST /api/entretiens/creer
+     * POST /api/entretiens/demarrer
+     * GET /api/entretiens/{id}
+     * POST /api/entretiens/terminer
+     * POST /api/entretiens/repondre
+
+================================================================================
+PACKAGE: com.master2sir.entretien.infrastructure.adapter.input.websocket
+------------------------------------------------------------------------
+
+Adaptateurs WebSocket pour les communications en temps réel.
+
+1. AvatarWebSocketHandler.java
+   - Handler WebSocket pour le mode avatar
+   - Gère les connexions et messages avatar
+   - Dépendances: ServiceModeAvatar, ObjectMapper
+
+2. InterviewWebSocketHandler.java
+   - Handler WebSocket pour les entretiens en temps réel
+   - Gère les connexions et messages d'entretien
+   - Dépendances: ServiceApplicationEntretien, ObjectMapper
+
+3. VoiceWebSocketHandler.java
+   - Handler WebSocket pour le mode voix
+   - Gère les connexions et messages vocaux
+   - Dépendances: ServiceModeVoix, ObjectMapper
+
+4. WebSocketConfig.java
+   - Configuration WebSocket
+   - Enregistre les handlers et configure les endpoints
+
+================================================================================
+PACKAGE: com.master2sir.entretien.infrastructure.adapter.output.jpa
+-------------------------------------------------------------------
+
+Adaptateurs JPA pour la persistance des données.
+
+1. EntretienJpaRepository.java
+   - Repository JPA étendant JpaRepository
+   - Interface Spring Data JPA
+   - Gère la persistance des entretiens
+
+2. SessionEntretienEntity.java
+   - Entité JPA pour SessionEntretien
+   - Mapping vers la table interview_sessions
+   - Champs JSON pour questions, réponses, rapport
+
+3. EntretienRepositoryAdapter.java
+   - Adaptateur implémentant EntretienRepository
+   - Convertit entre entités JPA et modèles du domaine
+   - Utilise EntretienJpaRepository
+
+================================================================================
+PACKAGE: com.master2sir.entretien.infrastructure.config
+--------------------------------------------------------
+
+Classes de configuration de l'infrastructure.
+
+1. SecurityConfig.java
+   - Configuration Spring Security
+   - Définit les règles de sécurité
+   * CSRF désactivé
+   * CORS configuré
+   * Endpoints publics et privés
+
+2. OpenApiConfig.java
+   - Configuration OpenAPI/Swagger
+   - Documentation des API REST
+   * Titre: Interview Simulator API
+   * Version: 1.0.0
+
+================================================================================
+PACKAGE: com.master2sir.entretien.infrastructure.adapter.output.ai
+------------------------------------------------------------------
+
+Adaptateurs pour les services IA externes.
+
+1. OpenAIChatAdapter.java
+   - Adaptateur pour l'API OpenAI
+   - Implémente PortServiceChatIA
+   - Utilise Spring AI pour communiquer avec GPT-4
+
+================================================================================
+FICHIERS DE CONFIGURATION
+==========================
+
+1. src/main/resources/application.properties
+   - Configuration principale de l'application
+   * Base de données PostgreSQL
+   * Configuration JPA/Hibernate
+   * Configuration Flyway
+   * Clés API OpenAI, ElevenLabs, D-ID
+   * Configuration logging
+
+2. src/test/resources/application-test.properties
+   - Configuration pour les tests
+   * Base de données H2 en mémoire
+   * Flyway désactivé
+   * Valeurs mock pour les API externes
+
+3. pom.xml
+   - Configuration Maven
+   * Dépendances Spring Boot 3.3.0
+   * Spring AI 1.0.0-M4
+   * PostgreSQL, Flyway
+   * Spring Security, WebSocket
+   * Lombok
+   * SpringDoc OpenAPI
+
+================================================================================
+MIGRATIONS DE BASE DE DONNÉES
+==============================
+
+Les migrations Flyway sont dans: src/main/resources/db/migration/
+- Gèrent la création et l'évolution du schéma de base de données
+- Table principale: interview_sessions
+- Tables secondaires: job_descriptions
+
+================================================================================
+TECHNOLOGIES UTILISÉES
+========================
+
+- Java 17
+- Spring Boot 3.3.0
+- Spring AI 1.0.0-M4
+- Spring Data JPA
+- PostgreSQL
+- Flyway
+- Spring Security
+- WebSocket
+- Lombok
+- OpenAPI/Swagger
+- Maven
+
+================================================================================
+INSTRUCTIONS D'EXÉCUTION
+=========================
+
+1. Compiler le projet:
+   mvn clean compile
+
+2. Exécuter les tests:
+   mvn test
+
+3. Lancer l'application:
+   mvn spring-boot:run
+
+4. Créer le JAR:
+   mvn clean package
+
+5. Exécuter le JAR:
+   java -jar target/entretien-0.0.1-SNAPSHOT.jar
+
+================================================================================
+REMARQUES IMPORTANTES
+======================
+
+- L'application nécessite PostgreSQL pour la production
+- Les tests utilisent H2 en mémoire
+- Spring Security est activé par défaut (erreur 403 normale)
+- Les clés API doivent être configurées dans les variables d'environnement
+- L'architecture suit les principes DDD (Domain-Driven Design)
+
+================================================================================
+FIN DE LA DOCUMENTATION
+================================================================================
